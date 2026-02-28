@@ -1,0 +1,35 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: search
+  datasource:
+    url: jdbc:postgresql://localhost:5432/nexus_search
+    username: nexus
+    password: nexus
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+integration:
+  catalog:
+    base-url: http://localhost:8081
+  content:
+    base-url: http://localhost:8084
+  media:
+    base-url: http://localhost:8085
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

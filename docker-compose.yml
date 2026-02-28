@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+
+    postgres:
+        image: postgres:16
+        container_name: nexus-pim-postgres
+        restart: always
+        environment:
+            POSTGRES_USER: nexus
+            POSTGRES_PASSWORD: nexus
+        ports:
+            - "5432:5432"
+        volumes:
+            - ./docker/data:/var/lib/postgresql/data
+            - ./docker/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
+
+volumes: {}
