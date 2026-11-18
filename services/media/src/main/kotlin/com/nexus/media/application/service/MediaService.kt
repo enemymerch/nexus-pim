@@ -6,6 +6,7 @@ import com.nexus.media.domain.model.MediaType
 import com.nexus.media.domain.port.MediaAssetStorePort
 import com.nexus.media.domain.valueobject.MediaAssetId
 import com.nexus.media.infrastructure.client.CatalogServiceClient
+import com.nexus.media.infrastructure.messaging.ProductSearchIndexEventPublisher
 import com.nexus.media.infrastructure.storage.UploadUrlFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -16,7 +17,8 @@ import java.util.UUID
 class MediaService(
     private val store: MediaAssetStorePort,
     private val catalogClient: CatalogServiceClient,
-    private val uploadUrlFactory: UploadUrlFactory
+    private val uploadUrlFactory: UploadUrlFactory,
+    private val indexEventPublisher: ProductSearchIndexEventPublisher
 ) {
 
     @Transactional
@@ -84,6 +86,7 @@ class MediaService(
         )
 
         val saved = store.save(toSave)
+        indexEventPublisher.publish(saved.productCode, "MEDIA_UPLOAD_INITIATED", saved.locale, saved.channel)
         return InitiatedUploadDetails(
             asset = toDetails(saved),
             uploadUrl = uploadUrlFactory.createUploadUrl(saved.storageKey),
@@ -96,7 +99,9 @@ class MediaService(
         val id = MediaAssetId(assetId)
         val asset = requireAsset(id)
         asset.markUploaded(sizeBytes = sizeBytes, checksumSha256 = checksumSha256)
-        return toDetails(store.save(asset))
+        val saved = store.save(asset)
+        indexEventPublisher.publish(saved.productCode, "MEDIA_UPLOAD_COMPLETED", saved.locale, saved.channel)
+        return toDetails(saved)
     }
 
     @Transactional
@@ -110,7 +115,9 @@ class MediaService(
         val id = MediaAssetId(assetId)
         val asset = requireAsset(id)
         asset.updatePresentation(role = role, locale = locale, channel = channel, sortOrder = sortOrder)
-        return toDetails(store.save(asset))
+        val saved = store.save(asset)
+        indexEventPublisher.publish(saved.productCode, "MEDIA_PRESENTATION_UPDATED", saved.locale, saved.channel)
+        return toDetails(saved)
     }
 
     @Transactional(readOnly = true)
@@ -129,7 +136,8 @@ class MediaService(
     fun deleteAsset(assetId: UUID) {
         val asset = requireAsset(MediaAssetId(assetId))
         asset.softDelete()
-        store.save(asset)
+        val saved = store.save(asset)
+        indexEventPublisher.publish(saved.productCode, "MEDIA_DELETED", saved.locale, saved.channel)
     }
 
     private fun requireAsset(id: MediaAssetId): MediaAsset =

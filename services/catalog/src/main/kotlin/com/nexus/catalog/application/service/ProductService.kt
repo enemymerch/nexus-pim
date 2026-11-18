@@ -5,6 +5,7 @@ import com.nexus.catalog.domain.model.VariantOption
 import com.nexus.catalog.domain.port.ProductStorePort
 import com.nexus.catalog.infrastructure.client.AttributeServiceClient
 import com.nexus.catalog.infrastructure.client.TaxonomyServiceClient
+import com.nexus.catalog.infrastructure.messaging.ProductSearchIndexEventPublisher
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,7 +15,8 @@ class ProductService(
     private val productStore: ProductStorePort,
     private val taxonomyClient: TaxonomyServiceClient,
     private val attributeClient: AttributeServiceClient,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val indexEventPublisher: ProductSearchIndexEventPublisher
 ) {
 
     @Transactional
@@ -49,7 +51,9 @@ class ProductService(
             variantAttributeCodes = normalizedVariantCodes
         )
 
-        return toDetails(productStore.save(product))
+        val saved = productStore.save(product)
+        indexEventPublisher.publish(saved.code, "PRODUCT_CREATED")
+        return toDetails(saved)
     }
 
     @Transactional
@@ -75,7 +79,9 @@ class ProductService(
             options = options
         )
 
-        return toDetails(productStore.save(product))
+        val saved = productStore.save(product)
+        indexEventPublisher.publish(saved.code, "PRODUCT_VARIANT_CREATED")
+        return toDetails(saved)
     }
 
     @Transactional(readOnly = true)

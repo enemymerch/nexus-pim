@@ -19,6 +19,17 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  kafka:
+    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
+    consumer:
+      group-id: search-indexer
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.nexus.events"
+        spring.json.value.default.type: com.nexus.events.ProductSearchIndexRequestedEvent
+        spring.json.use.type.headers: false
 
 integration:
   catalog:
@@ -27,6 +38,11 @@ integration:
     base-url: http://localhost:8084
   media:
     base-url: http://localhost:8085
+  elasticsearch:
+    base-url: http://localhost:9200
+
+search:
+  index-name: nexus_product_search_v1
 
 management:
   endpoints:

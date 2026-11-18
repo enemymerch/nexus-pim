@@ -1,0 +1,35 @@
+Entity relation diagram
+Microservice design with DDD
+Clean Architecture - Hexagonal architecture
+Kafka
+Event sourcing
+versioning - auditing
+lifecycle management
+kotlin details
+
+Containers
+Tracing-Observibility
+Event-management- indexing
+Elastic Search
+
+gRPC
+Rate Limitting
+circuit breaker
+
+design patterns - adapter , use-case , factory, singleton,
+
+spring data
+spring security
+spring oauth2-int
+
+redis - spring cache management
+
+testing: unit tests, integration tests, api testing ,regression , e2e tests!
+
+
+
+
+
+
+at the end -- minikube local kube deployment !
+

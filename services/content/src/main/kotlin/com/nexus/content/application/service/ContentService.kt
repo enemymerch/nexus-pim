@@ -3,13 +3,15 @@ package com.nexus.content.application.service
 import com.nexus.content.domain.model.ProductContent
 import com.nexus.content.domain.port.ProductContentStorePort
 import com.nexus.content.infrastructure.client.CatalogServiceClient
+import com.nexus.content.infrastructure.messaging.ProductSearchIndexEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ContentService(
     private val store: ProductContentStorePort,
-    private val catalogClient: CatalogServiceClient
+    private val catalogClient: CatalogServiceClient,
+    private val indexEventPublisher: ProductSearchIndexEventPublisher
 ) {
 
     @Transactional
@@ -38,7 +40,9 @@ class ContentService(
             bullets = bullets
         )
 
-        return toDetails(store.save(created))
+        val saved = store.save(created)
+        indexEventPublisher.publish(saved.productCode, "CONTENT_INITIALIZED", saved.defaultLocale, null)
+        return toDetails(saved)
     }
 
     @Transactional
@@ -52,7 +56,9 @@ class ContentService(
     ): ProductContentDetails {
         val aggregate = requireContent(productCode)
         aggregate.upsertLocaleContent(locale, title, shortDescription, description, bullets)
-        return toDetails(store.save(aggregate))
+        val saved = store.save(aggregate)
+        indexEventPublisher.publish(saved.productCode, "CONTENT_LOCALE_UPSERTED", locale, null)
+        return toDetails(saved)
     }
 
     @Transactional
@@ -67,7 +73,9 @@ class ContentService(
     ): ProductContentDetails {
         val aggregate = requireContent(productCode)
         aggregate.upsertChannelOverride(locale, channel, title, shortDescription, description, bullets)
-        return toDetails(store.save(aggregate))
+        val saved = store.save(aggregate)
+        indexEventPublisher.publish(saved.productCode, "CONTENT_CHANNEL_OVERRIDE_UPSERTED", locale, channel)
+        return toDetails(saved)
     }
 
     @Transactional(readOnly = true)

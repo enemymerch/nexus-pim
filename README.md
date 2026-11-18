@@ -1,5 +1,28 @@
 # Nexus PIM
 
+## Local workspace UI
+
+The React + TypeScript + Vite frontend is in [`frontend/`](frontend/README.md). It connects to all seven
+backend services and exposes their existing operations across products, categories, attributes,
+attribute sets, content, media, workflow and search. No mock dataset is used by the running UI.
+
+With Java 21 and Docker available, start infrastructure using `docker compose up -d`, then run the
+seven Spring Boot services on their configured ports 8081–8087. The database initializer creates all
+seven databases on a fresh PostgreSQL volume; existing volumes are preserved and need any missing
+databases provisioned separately. The supplied credentials and disabled Elasticsearch security are
+local-development defaults, not production settings.
+
+```powershell
+cd frontend
+# Node.js >=22.12
+npm ci
+npm run dev
+```
+
+Open **http://127.0.0.1:5173**. The development proxy routes API requests to the local backend services.
+Run `npm run verify` for TypeScript checks, production build and frontend tests. See the frontend README
+for production proxy requirements and current limitations, including authentication and binary storage.
+
 > Nexus PIM is a distributed, event-driven Product Information
 > Management platform built with Kotlin and Spring Boot.
 

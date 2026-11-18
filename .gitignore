@@ -26,7 +26,14 @@ replay_pid*
 # Kotlin Gradle plugin data, see https://kotlinlang.org/docs/whatsnew20.html#new-directory-for-kotlin-data-in-gradle-projects
 .kotlin/
 
-/docker/
+/docker/*
+!/docker/init-multiple-dbs.sh
 /.idea/
 /.tmp-run/
 **/build/
+/.gradle/
+**/node_modules/
+**/dist/
+**/.vitest/
+.env
+.env.*
